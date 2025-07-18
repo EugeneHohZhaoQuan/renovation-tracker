@@ -10,11 +10,11 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        'dark-roast': '#260801',
-        terracotta: '#A64941',
-        'off-white': '#F2F2F2',
-        'silver-mist': '#A6A6A6',
-        'rich-black': '#0D0D0D',
+        'dark-roast': 'var(--dark-roast)',
+        terracotta: 'var(--terracotta)',
+        'off-white': 'var(--off-white)',
+        'silver-mist': 'var(--silver-mist)',
+        'rich-black': 'var(--rich-black)',
       },
     },
   },

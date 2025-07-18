@@ -16,7 +16,28 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ExternalLink, MoreVertical, Trash2, Pencil } from 'lucide-react';
+import {
+  ExternalLink,
+  MoreVertical,
+  Trash2,
+  Pencil,
+  ImageIcon,
+} from 'lucide-react'; // Import ImageIcon
+
+// Import Dialog components
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+
+// Import Input and Label for the form
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea'; // Assuming you have a Textarea component
 
 // Import your CRUD functions and the Inspiration data type
 import {
@@ -27,16 +48,110 @@ import {
   Inspiration,
 } from '@/lib/inspirationService';
 
-// NOTE: We will add a proper form in a Dialog later. For now, adding is a test.
+// AddInspirationForm component (can be defined in a separate file or here for simplicity)
+interface AddInspirationFormProps {
+  onAdd: (inspiration: Omit<Inspiration, 'id'>) => Promise<void>;
+  onClose: () => void;
+  isLoading: boolean;
+}
+
+function AddInspirationForm({
+  onAdd,
+  onClose,
+  isLoading,
+}: AddInspirationFormProps) {
+  const [title, setTitle] = useState('');
+  const [notes, setNotes] = useState('');
+  const [link, setLink] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const newInspiration: Omit<Inspiration, 'id'> = {
+      title,
+      notes,
+      link,
+      imageUrl,
+      addedBy: 'You', // Or get from auth context later
+    };
+    await onAdd(newInspiration);
+    onClose(); // Close dialog after submission
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div className="grid gap-4 py-4">
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="title" className="text-right">
+            Title
+          </Label>
+          <Input
+            id="title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="col-span-3"
+            required
+          />
+        </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="notes" className="text-right">
+            Notes
+          </Label>
+          <Textarea
+            id="notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            className="col-span-3"
+          />
+        </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="link" className="text-right">
+            Link
+          </Label>
+          <Input
+            id="link"
+            type="url"
+            value={link}
+            onChange={(e) => setLink(e.target.value)}
+            className="col-span-3"
+          />
+        </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="imageUrl" className="text-right">
+            Image URL
+          </Label>
+          <Input
+            id="imageUrl"
+            type="url"
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+            className="col-span-3"
+          />
+        </div>
+      </div>
+      <DialogFooter>
+        <Button
+          type="submit"
+          disabled={isLoading}
+          className="bg-terracotta hover:bg-terracotta/90 text-gray-500"
+        >
+          {isLoading ? 'Adding...' : 'Add Idea'}
+        </Button>
+      </DialogFooter>
+    </form>
+  );
+}
 
 export function InspirationBoard() {
   const [inspirations, setInspirations] = useState<Inspiration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAddingItem, setIsAddingItem] = useState(false); // New state for dialog
+  const [isDialogOpen, setIsDialogOpen] = useState(false); // State to control dialog visibility
 
   // Function to fetch data from Firestore and update the state
   const fetchAndSetData = async () => {
     try {
-      !isLoading && setIsLoading(true);
+      !isLoading && setIsLoading(true); // Only set loading if not already
       const data = await getInspirations();
       console.log('Fetched inspirations:', data);
       setInspirations(data);
@@ -55,17 +170,18 @@ export function InspirationBoard() {
 
   // --- CRUD Handler Functions ---
 
-  const handleAddItem = async () => {
-    // This data would normally come from a form in a Dialog
-    const newItem = {
-      title: 'New Idea from Board',
-      notes: 'This was added with the button.',
-      link: 'https://example.com',
-      imageUrl: `https://source.unsplash.com/random/400x300?interior,${Date.now()}`, // Random image
-      addedBy: 'You',
-    };
-    await addInspiration(newItem);
-    fetchAndSetData(); // Refetch to show the new item
+  const handleAddItem = async (newItem: Omit<Inspiration, 'id'>) => {
+    setIsAddingItem(true); // Indicate that an item is being added
+    try {
+      await addInspiration(newItem);
+      fetchAndSetData(); // Refetch to show the new item
+    } catch (error) {
+      console.error('Failed to add inspiration:', error);
+      // Handle error, e.g., show a toast notification
+    } finally {
+      setIsAddingItem(false); // Reset adding state
+      setIsDialogOpen(false); // Close the dialog
+    }
   };
 
   const handleUpdateItem = async (id: string) => {
@@ -79,8 +195,13 @@ export function InspirationBoard() {
 
   const handleDeleteItem = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this inspiration?')) {
-      await deleteInspiration(id);
-      fetchAndSetData(); // Refetch to remove the item from the UI
+      try {
+        await deleteInspiration(id);
+        fetchAndSetData(); // Refetch to remove the item from the UI
+      } catch (error) {
+        console.error('Failed to delete inspiration:', error);
+        // Handle error
+      }
     }
   };
 
@@ -91,12 +212,11 @@ export function InspirationBoard() {
           <CardTitle className="text-dark-roast">Inspiration Board</CardTitle>
           <CardDescription>Shared ideas for our dream home.</CardDescription>
         </div>
-        {/* The "Add Idea" button now triggers the CREATE function */}
         <Button
-          onClick={handleAddItem}
-          className="bg-terracotta hover:bg-terracotta/90"
+          onClick={() => setIsDialogOpen(true)}
+          className="bg-terracotta hover:bg-terracotta/90 cursor-pointer"
         >
-          Add Test Idea
+          Add New Idea
         </Button>
       </CardHeader>
       <CardContent>
@@ -107,14 +227,18 @@ export function InspirationBoard() {
             {inspirations.map((item) => (
               <Card key={item.id} className="flex flex-col group">
                 <div className="relative">
-                  <img
-                    src={
-                      item.imageUrl ||
-                      'https://source.unsplash.com/random/400x300?architecture'
-                    }
-                    alt={item.title}
-                    className="rounded-t-lg object-cover h-40 w-full"
-                  />
+                  {item.imageUrl ? ( // Conditional rendering for image or placeholder
+                    <img
+                      src={item.imageUrl}
+                      alt={item.title}
+                      className="rounded-t-lg object-cover h-40 w-full"
+                    />
+                  ) : (
+                    <div className="rounded-t-lg bg-gray-200 h-40 w-full flex items-center justify-center text-gray-500">
+                      <ImageIcon className="h-16 w-16" />{' '}
+                      {/* Placeholder icon */}
+                    </div>
+                  )}
                   {/* Actions Dropdown Menu */}
                   <div className="absolute top-2 right-2">
                     <DropdownMenu>
@@ -173,6 +297,23 @@ export function InspirationBoard() {
           </div>
         )}
       </CardContent>
+
+      {/* Add Inspiration Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Add New Inspiration</DialogTitle>
+            <DialogDescription>
+              Enter the details for your new inspiration idea.
+            </DialogDescription>
+          </DialogHeader>
+          <AddInspirationForm
+            onAdd={handleAddItem}
+            onClose={() => setIsDialogOpen(false)}
+            isLoading={isAddingItem}
+          />
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -41,6 +41,12 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  --color-dark-roast: var(--dark-roast);
+  --color-terracotta: var(--terracotta);
+  --color-off-white: var(--off-white);
+  --color-silver-mist: var(--silver-mist);
+  --color-rich-black: var(--rich-black);
 }
 
 :root {
@@ -76,6 +82,12 @@
   --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
+
+  --dark-roast: #260801;
+  --terracotta: #a64941;
+  --off-white: #f2f2f2;
+  --silver-mist: #a6a6a6;
+  --rich-black: #0d0d0d;
 }
 
 .dark {
@@ -110,6 +122,12 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
+
+  --dark-roast: #1a0601; /* A slightly darker roast for dark mode */
+  --terracotta: #8c3b36; /* A slightly muted terracotta for dark mode */
+  --off-white: #e0e0e0;
+  --silver-mist: #8c8c8c;
+  --rich-black: #050505;
 }
 
 @layer base {

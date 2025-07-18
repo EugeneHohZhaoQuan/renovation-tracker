@@ -16,13 +16,13 @@ import { Building, PlusCircle } from 'lucide-react';
 export function Header() {
   return (
     // 1. Changed background to a subtle gray for better separation
-    <header className="bg-slate-50 border-b border-gray-200 sticky top-0 z-10">
+    <header className="bg-dark-roast border-b border-gray-200 sticky top-0 z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left Side: Logo/Title */}
           <div className="flex items-center">
-            <Building className="h-8 w-8 text-terracotta" />
-            <h1 className="text-xl font-bold text-dark-roast ml-2">
+            <Building className="h-8 w-8 text-off-white" />
+            <h1 className="text-xl font-bold text-off-white ml-2">
               Renovation Tracker
             </h1>
           </div>
@@ -33,7 +33,7 @@ export function Header() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 {/* 2. This className ensures the button is terracotta with white text */}
-                <Button className="bg-terracotta hover:bg-terracotta/90 text-black-50 cursor-pointer">
+                <Button className="bg-terracotta hover:bg-terracotta/90 cursor-pointer">
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Add New
                 </Button>
