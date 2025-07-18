@@ -28,7 +28,7 @@ const FinancialSummary = () => (
         ></div>
       </div>
       <p className="text-sm text-silver-mist">
-        You've spent 65% of your total budget.
+        You&apos;ve spent 65% of your total budget.
       </p>
     </CardContent>
   </Card>
@@ -37,7 +37,7 @@ const FinancialSummary = () => (
 const UpcomingTasks = () => (
   <Card className="bg-white">
     <CardHeader>
-      <CardTitle className="text-dark-roast">What's Next?</CardTitle>
+      <CardTitle className="text-dark-roast">What&apos;s Next?</CardTitle>
     </CardHeader>
     <CardContent className="space-y-4">
       <div className="flex items-start">
