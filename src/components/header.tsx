@@ -1,6 +1,7 @@
 // components/header.tsx
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,9 +12,33 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Building, PlusCircle } from 'lucide-react';
+import { Building, PlusCircle, LogOut, User as UserIcon } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function Header() {
+  const { user, signOut, loading } = useAuth();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      router.push('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  // Get user initials for avatar fallback
+  const getInitials = () => {
+    if (!user || !user.displayName) return 'ME';
+    return user.displayName
+      .split(' ')
+      .map((name) => name[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  };
+
   return (
     // 1. Changed background to a subtle gray for better separation
     <header className="bg-dark-roast border-b border-gray-200 sticky top-0 z-10">
@@ -60,22 +85,36 @@ export function Header() {
               <DropdownMenuTrigger asChild>
                 <Avatar className="cursor-pointer">
                   <AvatarImage
-                    src="https://github.com/shadcn.png"
-                    alt="@user"
+                    src={user?.photoURL || undefined}
+                    alt={user?.displayName || '@user'}
                   />
                   <AvatarFallback className="bg-silver-mist text-dark-roast font-bold">
-                    ME
+                    {getInitials()}
                   </AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel>
+                  {user?.displayName || 'My Account'}
+                </DropdownMenuLabel>
+                <DropdownMenuLabel className="text-xs text-gray-500 font-normal">
+                  {user?.email}
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>Billing</DropdownMenuItem>
+                <DropdownMenuItem>
+                  <UserIcon className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <span>Billing</span>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-terracotta focus:text-terracotta focus:bg-terracotta/10">
-                  Sign Out
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="text-terracotta focus:text-terracotta focus:bg-terracotta/10"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Sign Out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
