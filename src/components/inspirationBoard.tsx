@@ -22,7 +22,7 @@ import {
   Trash2,
   Pencil,
   ImageIcon,
-} from 'lucide-react'; // Import ImageIcon
+} from 'lucide-react';
 
 // Import Dialog components
 import {
@@ -37,7 +37,7 @@ import {
 // Import Input and Label for the form
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea'; // Assuming you have a Textarea component
+import { Textarea } from '@/components/ui/textarea';
 
 // Import your CRUD functions and the Inspiration data type
 import {
@@ -48,7 +48,19 @@ import {
   Inspiration,
 } from '@/lib/inspirationService';
 
-// AddInspirationForm component (can be defined in a separate file or here for simplicity)
+// Extend Inspiration type to include unfurl data
+interface InspirationWithUnfurl extends Inspiration {
+  unfurlData?: {
+    title: string;
+    description: string;
+    imageUrl: string | null;
+    url: string; // The canonical URL
+  };
+  unfurlLoading?: boolean;
+  unfurlError?: boolean;
+}
+
+// AddInspirationForm component (keep as is or similar)
 interface AddInspirationFormProps {
   onAdd: (inspiration: Omit<Inspiration, 'id'>) => Promise<void>;
   onClose: () => void;
@@ -63,7 +75,7 @@ function AddInspirationForm({
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
   const [link, setLink] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [imageUrl, setImageUrl] = useState(''); // Allow user to provide a direct image
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,11 +83,11 @@ function AddInspirationForm({
       title,
       notes,
       link,
-      imageUrl,
-      addedBy: 'You', // Or get from auth context later
+      imageUrl, // Use user provided image if available
+      addedBy: 'You',
     };
     await onAdd(newInspiration);
-    onClose(); // Close dialog after submission
+    onClose();
   };
 
   return (
@@ -106,7 +118,7 @@ function AddInspirationForm({
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="link" className="text-right">
-            Link
+            Link (for preview)
           </Label>
           <Input
             id="link"
@@ -118,7 +130,7 @@ function AddInspirationForm({
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="imageUrl" className="text-right">
-            Image URL
+            Direct Image URL (optional)
           </Label>
           <Input
             id="imageUrl"
@@ -126,6 +138,7 @@ function AddInspirationForm({
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
             className="col-span-3"
+            placeholder="e.g., from Unsplash, if no link preview"
           />
         </div>
       </div>
@@ -133,7 +146,7 @@ function AddInspirationForm({
         <Button
           type="submit"
           disabled={isLoading}
-          className="bg-terracotta hover:bg-terracotta/90 text-gray-500"
+          className="bg-terracotta hover:bg-terracotta/90"
         >
           {isLoading ? 'Adding...' : 'Add Idea'}
         </Button>
@@ -143,23 +156,67 @@ function AddInspirationForm({
 }
 
 export function InspirationBoard() {
-  const [inspirations, setInspirations] = useState<Inspiration[]>([]);
+  const [inspirations, setInspirations] = useState<InspirationWithUnfurl[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isAddingItem, setIsAddingItem] = useState(false); // New state for dialog
-  const [isDialogOpen, setIsDialogOpen] = useState(false); // State to control dialog visibility
+  const [isAddingItem, setIsAddingItem] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Function to fetch data from Firestore and update the state
   const fetchAndSetData = async () => {
     try {
-      !isLoading && setIsLoading(true); // Only set loading if not already
+      !isLoading && setIsLoading(true);
       const data = await getInspirations();
       console.log('Fetched inspirations:', data);
-      setInspirations(data);
+
+      // Initialize unfurl data fields
+      const initialInspirations: InspirationWithUnfurl[] = data.map((item) => ({
+        ...item,
+        unfurlData: undefined,
+        unfurlLoading: false,
+        unfurlError: false,
+      }));
+      setInspirations(initialInspirations);
     } catch (error) {
       console.error(error);
-      // Optionally set an error state here to show in the UI
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Function to fetch unfurl data for a specific item
+  const fetchUnfurlData = async (index: number, link: string) => {
+    setInspirations((prevInspirations) => {
+      const newInspirations = [...prevInspirations];
+      newInspirations[index].unfurlLoading = true;
+      return newInspirations;
+    });
+
+    try {
+      const response = await fetch(
+        `/api/unfurl?url=${encodeURIComponent(link)}`,
+      );
+      const data = await response.json();
+
+      setInspirations((prevInspirations) => {
+        const newInspirations = [...prevInspirations];
+        if (response.ok) {
+          newInspirations[index].unfurlData = data;
+          newInspirations[index].unfurlError = false;
+        } else {
+          console.error('Failed to unfurl link:', data.error);
+          newInspirations[index].unfurlError = true;
+        }
+        newInspirations[index].unfurlLoading = false;
+        return newInspirations;
+      });
+    } catch (error) {
+      console.error('Network error during unfurl:', error);
+      setInspirations((prevInspirations) => {
+        const newInspirations = [...prevInspirations];
+        newInspirations[index].unfurlError = true;
+        newInspirations[index].unfurlLoading = false;
+        return newInspirations;
+      });
     }
   };
 
@@ -168,39 +225,51 @@ export function InspirationBoard() {
     fetchAndSetData();
   }, []);
 
+  // Use another useEffect to fetch unfurl data once inspirations are loaded
+  useEffect(() => {
+    inspirations.forEach((item, index) => {
+      if (
+        item.link &&
+        !item.unfurlData &&
+        !item.unfurlLoading &&
+        !item.unfurlError
+      ) {
+        fetchUnfurlData(index, item.link);
+      }
+    });
+  }, [inspirations]); // Re-run when inspirations change
+
   // --- CRUD Handler Functions ---
 
   const handleAddItem = async (newItem: Omit<Inspiration, 'id'>) => {
-    setIsAddingItem(true); // Indicate that an item is being added
+    setIsAddingItem(true);
     try {
       await addInspiration(newItem);
       fetchAndSetData(); // Refetch to show the new item
     } catch (error) {
       console.error('Failed to add inspiration:', error);
-      // Handle error, e.g., show a toast notification
     } finally {
-      setIsAddingItem(false); // Reset adding state
-      setIsDialogOpen(false); // Close the dialog
+      setIsAddingItem(false);
+      setIsDialogOpen(false);
     }
   };
 
   const handleUpdateItem = async (id: string) => {
-    // In a real app, you'd open a dialog to get new values
-    const newNote = prompt('Enter a new note for this item:');
+    const newNote = prompt('Enter a new note for this item:'); // Fix: No unescaped apostrophe here
     if (newNote) {
       await updateInspiration(id, { notes: newNote });
-      fetchAndSetData(); // Refetch to show the change
+      fetchAndSetData();
     }
   };
 
   const handleDeleteItem = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this inspiration?')) {
+      // Fix: No unescaped apostrophe here
       try {
         await deleteInspiration(id);
-        fetchAndSetData(); // Refetch to remove the item from the UI
+        fetchAndSetData();
       } catch (error) {
         console.error('Failed to delete inspiration:', error);
-        // Handle error
       }
     }
   };
@@ -224,10 +293,27 @@ export function InspirationBoard() {
           <div className="text-center p-10">Loading inspirations...</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {inspirations.map((item) => (
+            {inspirations.map((item, index) => (
               <Card key={item.id} className="flex flex-col group">
                 <div className="relative">
-                  {item.imageUrl ? ( // Conditional rendering for image or placeholder
+                  {/* Conditional rendering for image source */}
+                  {item.unfurlLoading ? (
+                    <div className="rounded-t-lg bg-gray-100 h-40 w-full flex items-center justify-center animate-pulse">
+                      <ImageIcon className="h-12 w-12" />
+                      <span className="ml-2 text-sm">Loading preview...</span>
+                    </div>
+                  ) : item.unfurlError ? (
+                    <div className="rounded-t-lg bg-red-100 h-40 w-full flex items-center justify-center text-red-500">
+                      <ImageIcon className="h-12 w-12" />
+                      <span className="ml-2 text-sm">Preview Failed</span>
+                    </div>
+                  ) : item.unfurlData?.imageUrl ? ( // Use unfurl image first
+                    <img
+                      src={item.unfurlData.imageUrl}
+                      alt={item.unfurlData.title || 'Link preview'}
+                      className="rounded-t-lg object-cover h-40 w-full"
+                    />
+                  ) : item.imageUrl ? ( // Fallback to user-provided image
                     <img
                       src={item.imageUrl}
                       alt={item.title}
@@ -235,8 +321,7 @@ export function InspirationBoard() {
                     />
                   ) : (
                     <div className="rounded-t-lg bg-gray-200 h-40 w-full flex items-center justify-center text-gray-500">
-                      <ImageIcon className="h-16 w-16" />{' '}
-                      {/* Placeholder icon */}
+                      <ImageIcon className="h-16 w-16" />
                     </div>
                   )}
                   {/* Actions Dropdown Menu */}
@@ -271,25 +356,31 @@ export function InspirationBoard() {
                 </div>
 
                 <div className="p-4 flex flex-col flex-grow">
+                  {/* Display unfurled title/description or item's own */}
                   <h3 className="font-semibold text-rich-black">
-                    {item.title}
+                    {item.unfurlData?.title || item.title}
                   </h3>
                   <p className="text-sm text-gray-600 mt-1 flex-grow">
-                    {item.notes}
+                    {item.unfurlData?.description || item.notes}
                   </p>
                   <div className="flex justify-between items-center mt-4">
                     <span className="text-xs text-silver-mist">
                       Added by {item.addedBy}
                     </span>
-                    <a
-                      href={item.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Button variant="ghost" size="icon">
-                        <ExternalLink className="h-4 w-4 text-terracotta" />
-                      </Button>
-                    </a>
+                    {item.link && ( // Only show external link if a link exists
+                      <a
+                        href={item.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Visit ${
+                          item.unfurlData?.title || item.title
+                        }`}
+                      >
+                        <Button variant="ghost" size="icon">
+                          <ExternalLink className="h-4 w-4 text-terracotta" />
+                        </Button>
+                      </a>
+                    )}
                   </div>
                 </div>
               </Card>

@@ -15,6 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { ShineBorder } from '@/components/magicui/shine-border';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -42,7 +43,8 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-off-white p-4">
-      <Card className="w-full max-w-md">
+      <Card className="relative overflow-hidden w-full max-w-md">
+        <ShineBorder shineColor={['#A07CFE', '#FE8FB5', '#FFBE7B']} />
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-dark-roast">
             Sign In

@@ -46,10 +46,8 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Left Side: Logo/Title */}
           <div className="flex items-center">
-            <Building className="h-8 w-8 text-off-white" />
-            <h1 className="text-xl font-bold text-off-white ml-2">
-              Renovation Tracker
-            </h1>
+            {/* <Building className="h-8 w-8 text-off-white" /> */}
+            <h1 className="text-xl font-bold text-off-white ml-2">Renovapp</h1>
           </div>
 
           {/* Right Side: Actions & Profile */}

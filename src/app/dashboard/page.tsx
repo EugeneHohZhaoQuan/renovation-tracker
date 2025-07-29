@@ -23,7 +23,7 @@ const FinancialSummary = () => (
       <div className="text-3xl font-bold">$13,000 / $20,000</div>
       <div className="w-full bg-rich-black rounded-full h-2.5">
         <div
-          className="bg-terracotta h-2.5 rounded-full"
+          className="bg-off-white h-2.5 rounded-full"
           style={{ width: '65%' }}
         ></div>
       </div>

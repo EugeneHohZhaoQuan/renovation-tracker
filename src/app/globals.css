@@ -47,6 +47,18 @@
   --color-off-white: var(--off-white);
   --color-silver-mist: var(--silver-mist);
   --color-rich-black: var(--rich-black);
+  --animate-shine: shine var(--duration) infinite linear;
+  @keyframes shine {
+    0% {
+      background-position: 0% 0%;
+    }
+    50% {
+      background-position: 100% 100%;
+    }
+    to {
+      background-position: 0% 0%;
+    }
+  }
 }
 
 :root {
@@ -83,8 +95,8 @@
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
 
-  --dark-roast: #260801;
-  --terracotta: #a64941;
+  --dark-roast: #4b3935;
+  --terracotta: #f0e7d5;
   --off-white: #f2f2f2;
   --silver-mist: #a6a6a6;
   --rich-black: #0d0d0d;
