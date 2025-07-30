@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
@@ -24,6 +24,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
   const router = useRouter();
+  const user = useAuth().user;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +33,6 @@ export default function LoginPage() {
 
     try {
       await signIn({ email, password });
-      router.push('/dashboard');
     } catch (error) {
       console.error('Login error:', error);
       setError(error instanceof Error ? error.message : 'Failed to sign in');
@@ -40,6 +40,12 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard'); // Redirect to dashboard if user is already logged in
+    }
+  }, [user, router]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-off-white p-4">
@@ -80,7 +86,7 @@ export default function LoginPage() {
             {error && <p className="text-red-500 text-sm">{error}</p>}
             <Button
               type="submit"
-              className="w-full bg-terracotta hover:bg-terracotta/90"
+              className="w-full bg-terracotta hover:bg-terracotta/90 text-dark-roast"
               disabled={loading}
             >
               {loading ? 'Signing in...' : 'Sign In'}
@@ -90,7 +96,7 @@ export default function LoginPage() {
         <CardFooter className="flex justify-center">
           <p className="text-sm text-gray-500">
             Don&apos;t have an account?{' '}
-            <Link href="/register" className="text-terracotta hover:underline">
+            <Link href="/register" className="text-dark-roast hover:underline">
               Register
             </Link>
           </p>

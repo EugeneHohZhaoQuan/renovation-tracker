@@ -146,7 +146,7 @@ function AddInspirationForm({
         <Button
           type="submit"
           disabled={isLoading}
-          className="bg-terracotta hover:bg-terracotta/90"
+          className="bg-terracotta hover:bg-terracotta/90 text-rich-black"
         >
           {isLoading ? 'Adding...' : 'Add Idea'}
         </Button>
@@ -283,7 +283,7 @@ export function InspirationBoard() {
         </div>
         <Button
           onClick={() => setIsDialogOpen(true)}
-          className="bg-terracotta hover:bg-terracotta/90 cursor-pointer"
+          className="bg-terracotta hover:bg-terracotta/90 cursor-pointer text-rich-black"
         >
           Add New Idea
         </Button>

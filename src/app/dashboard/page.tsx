@@ -41,14 +41,14 @@ const UpcomingTasks = () => (
     </CardHeader>
     <CardContent className="space-y-4">
       <div className="flex items-start">
-        <ListTodo className="h-5 w-5 text-terracotta mr-3 mt-1 shrink-0" />
+        <ListTodo className="h-5 w-5 text-rich-black mr-3 mt-1 shrink-0" />
         <div>
           <p className="font-medium text-rich-black">Meet with electrician</p>
           <p className="text-sm text-silver-mist">Tomorrow, 10:00 AM</p>
         </div>
       </div>
       <div className="flex items-start">
-        <ListTodo className="h-5 w-5 text-terracotta mr-3 mt-1 shrink-0" />
+        <ListTodo className="h-5 w-5 text-rich-black mr-3 mt-1 shrink-0" />
         <div>
           <p className="font-medium text-rich-black">
             Finalize kitchen paint color

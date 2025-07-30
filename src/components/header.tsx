@@ -47,7 +47,7 @@ export function Header() {
           {/* Left Side: Logo/Title */}
           <div className="flex items-center">
             {/* <Building className="h-8 w-8 text-off-white" /> */}
-            <h1 className="text-xl font-bold text-off-white ml-2">Renovapp</h1>
+            <h1 className="text-xl font-bold text-off-white">Renovapp</h1>
           </div>
 
           {/* Right Side: Actions & Profile */}
@@ -56,8 +56,7 @@ export function Header() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 {/* 2. This className ensures the button is terracotta with white text */}
-                <Button className="bg-terracotta hover:bg-terracotta/90 cursor-pointer">
-                  <PlusCircle className="mr-2 h-4 w-4" />
+                <Button className="bg-terracotta hover:bg-terracotta/90 cursor-pointer text-rich-black">
                   Add New
                 </Button>
               </DropdownMenuTrigger>
@@ -86,7 +85,7 @@ export function Header() {
                     src={user?.photoURL || undefined}
                     alt={user?.displayName || '@user'}
                   />
-                  <AvatarFallback className="bg-silver-mist text-dark-roast font-bold">
+                  <AvatarFallback className="bg-silver-mist text-rich-black text-xs">
                     {getInitials()}
                   </AvatarFallback>
                 </Avatar>
@@ -109,7 +108,7 @@ export function Header() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={handleSignOut}
-                  className="text-terracotta focus:text-terracotta focus:bg-terracotta/10"
+                  className="text-rich-black focus:text-rich-black focus:bg-terracotta/10"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Sign Out</span>

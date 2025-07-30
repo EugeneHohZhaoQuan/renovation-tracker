@@ -112,7 +112,7 @@ export default function RegisterPage() {
             {error && <p className="text-red-500 text-sm">{error}</p>}
             <Button
               type="submit"
-              className="w-full bg-terracotta hover:bg-terracotta/90"
+              className="w-full bg-terracotta hover:bg-terracotta/90 text-dark-roast"
               disabled={loading}
             >
               {loading ? 'Creating Account...' : 'Create Account'}
@@ -122,7 +122,7 @@ export default function RegisterPage() {
         <CardFooter className="flex justify-center">
           <p className="text-sm text-gray-500">
             Already have an account?{' '}
-            <Link href="/login" className="text-terracotta hover:underline">
+            <Link href="/login" className="text-dark-roast hover:underline">
               Sign In
             </Link>
           </p>

@@ -51,7 +51,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Sign in function
   const signIn = async (data: LoginData) => {
     try {
-      await authSignIn(data);
+      const user = await authSignIn(data);
+      setUser(user);
     } catch (error) {
       console.error('Error in sign in:', error);
       throw error;
